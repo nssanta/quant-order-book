@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="description" content="OrderBook Pro - Профессиональная визуализация стаканов криптобирж">
+
+  <title>OrderBook Pro | Crypto Depth Visualization</title>
+
+  <!-- Preconnect к биржам -->
+  <link rel="preconnect" href="https://stream.binance.com">
+  <link rel="preconnect" href="https://ws.okx.com">
+  <link rel="preconnect" href="https://stream.bybit.com">
+
+  <!-- Иконка -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header__logo">
+        <span>📊</span>
+        <span>OrderBook Pro</span>
+      </div>
+
+      <!-- Селектор биржи -->
+      <div class="selector" id="exchange-selector">
+        <div class="selector__trigger">
+          <span class="selector__label" id="exchange-label">Binance</span>
+          <span class="selector__arrow">▼</span>
+        </div>
+        <div class="selector__dropdown">
+          <div class="selector__option selected" data-exchange="binance">
+            Binance
+          </div>
+          <div class="selector__option" data-exchange="okx">
+            OKX
+          </div>
+          <div class="selector__option" data-exchange="bybit">
+            Bybit
+          </div>
+        </div>
+      </div>
+
+      <!-- Селектор пары -->
+      <div class="selector" id="symbol-selector">
+        <div class="selector__trigger">
+          <span class="selector__label" id="symbol-label">BTCUSDT</span>
+          <span class="selector__arrow">▼</span>
+        </div>
+        <div class="selector__dropdown" id="symbol-dropdown">
+          <input type="text" class="selector__search" placeholder="Поиск..." id="symbol-search">
+          <div class="selector__options" id="symbol-options">
+            <!-- Динамически заполняем -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Мобильный таймфрейм в header -->
+      <select class="header__timeframe" id="header-timeframe-select">
+        <option value="1m">1м</option>
+        <option value="5m">5м</option>
+        <option value="15m">15м</option>
+        <option value="1h" selected>1ч</option>
+        <option value="4h">4ч</option>
+        <option value="1d">1д</option>
+      </select>
+
+      <!-- Визуальные элементы (только desktop) -->
+      <div class="header__controls">
+        <button class="btn btn--icon active" id="heatmap-btn" title="Тепловая карта">🌡️</button>
+        <button class="btn btn--icon" id="indicators-btn" title="Индикаторы">📊</button>
+        <div class="divider"></div>
+        <button class="btn btn--icon" id="settings-btn" title="Настройки">⚙️</button>
+        <button class="btn btn--icon" id="fullscreen-btn" title="Полный экран">⛶</button>
+      </div>
+    </header>
+
+    <!-- Таймфреймы -->
+    <div class="timeframes" id="timeframes">
+      <button class="timeframe-btn" data-tf="1m">1м</button>
+      <button class="timeframe-btn" data-tf="3m">3м</button>
+      <button class="timeframe-btn" data-tf="5m">5м</button>
+      <button class="timeframe-btn" data-tf="15m">15м</button>
+      <button class="timeframe-btn" data-tf="30m">30м</button>
+      <button class="timeframe-btn active" data-tf="1h">1ч</button>
+      <button class="timeframe-btn" data-tf="2h">2ч</button>
+      <button class="timeframe-btn" data-tf="4h">4ч</button>
+      <button class="timeframe-btn" data-tf="6h">6ч</button>
+      <button class="timeframe-btn" data-tf="12h">12ч</button>
+      <button class="timeframe-btn" data-tf="1d">1д</button>
+      <button class="timeframe-btn" data-tf="3d">3д</button>
+      <button class="timeframe-btn" data-tf="1w">1н</button>
+      <button class="timeframe-btn" data-tf="1M">1М</button>
+
+      <!-- Мобильный dropdown -->
+      <select class="timeframe-select" id="timeframe-select">
+        <option value="1m">1 мин</option>
+        <option value="3m">3 мин</option>
+        <option value="5m">5 мин</option>
+        <option value="15m">15 мин</option>
+        <option value="30m">30 мин</option>
+        <option value="1h" selected>1 час</option>
+        <option value="2h">2 часа</option>
+        <option value="4h">4 часа</option>
+        <option value="6h">6 часов</option>
+        <option value="12h">12 часов</option>
+        <option value="1d">1 день</option>
+        <option value="3d">3 дня</option>
+        <option value="1w">1 неделя</option>
+        <option value="1M">1 месяц</option>
+      </select>
+    </div>
+
+    <!-- Main content -->
+    <main class="main">
+      <!-- Контейнер графика -->
+      <div class="chart-container">
+        <div class="chart-area" id="chart-area">
+          <!-- TradingView Chart рендерится здесь -->
+          <div class="loading" id="chart-loading">
+            <div class="loading__spinner"></div>
+            <span>Загружаем данные...</span>
+          </div>
+        </div>
+
+        <!-- CVD График покупок/продаж -->
+        <div class="cvd-container" id="cvd-chart"></div>
+
+        <!-- Аналитика внизу -->
+        <div class="analytics" id="analytics">
+          <div class="metric">
+            <span class="metric__label">Index α</span>
+            <span class="metric__value" id="metric-alpha">1.00</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">Delta</span>
+            <span class="metric__value" id="metric-delta">+0</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">CVD</span>
+            <span class="metric__value" id="metric-cvd">+0</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">Imbalance</span>
+            <span class="metric__value" id="metric-imbalance">0%</span>
+          </div>
+          <div class="metric">
+            <span class="metric__label">Spread</span>
+            <span class="metric__value" id="metric-spread">0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar с Order Book -->
+      <aside class="sidebar" id="sidebar">
+        <div class="orderbook__header">
+          <button class="btn btn--icon sidebar__close" id="sidebar-close" title="Закрыть">←</button>
+          <span class="orderbook__title">Order Book</span>
+          <div class="orderbook__modes btn-group">
+            <button class="btn btn--small active" data-mode="ladder" title="DOM Ladder">📊</button>
+            <button class="btn btn--small" data-mode="depth" title="Depth Chart">📈</button>
+            <button class="btn btn--small" data-mode="heatmap" title="Heatmap">🌡️</button>
+          </div>
+        </div>
+
+        <!-- Выбор глубины -->
+        <div class="orderbook__depth">
+          <label>Глубина:</label>
+          <select id="depth-select">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20" selected>20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+
+        <div class="orderbook__content" id="orderbook-content">
+          <!-- DOM Ladder / Depth Chart / Heatmap -->
+        </div>
+
+        <!-- Сводка ключевых уровней -->
+        <div id="levels-summary"></div>
+      </aside>
+    </main>
+
+    <!-- Bottom Navigation (Mobile App Style) -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="bottom-nav__btn active" data-tab="chart">
+        <span class="bottom-nav__icon">📊</span>
+        <span class="bottom-nav__label">Chart</span>
+      </button>
+      <button class="bottom-nav__btn" data-tab="draw">
+        <span class="bottom-nav__icon">✏️</span>
+        <span class="bottom-nav__label">Draw</span>
+      </button>
+      <button class="bottom-nav__btn" data-tab="book">
+        <span class="bottom-nav__icon">📖</span>
+        <span class="bottom-nav__label">Book</span>
+      </button>
+      <button class="bottom-nav__btn" data-tab="info">
+        <span class="bottom-nav__icon">ℹ️</span>
+        <span class="bottom-nav__label">Info</span>
+      </button>
+      <button class="bottom-nav__btn" data-tab="settings">
+        <span class="bottom-nav__icon">⚙️</span>
+        <span class="bottom-nav__label">Settings</span>
+      </button>
+    </nav>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

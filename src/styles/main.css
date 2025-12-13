@@ -1,0 +1,879 @@
+/* ============================================
+ * OrderBook Pro - Главные стили
+ * Темная тема в стиле TradingView
+ * ============================================ */
+
+:root {
+  /* Основные цвета */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a24;
+  --bg-hover: #22222e;
+
+  /* Акцентные цвета */
+  --accent-green: #00c853;
+  --accent-green-dim: rgba(0, 200, 83, 0.2);
+  --accent-red: #ff1744;
+  --accent-red-dim: rgba(255, 23, 68, 0.2);
+  --accent-blue: #2979ff;
+  --accent-yellow: #ffd600;
+
+  /* Текст */
+  --text-primary: #e8e8ea;
+  --text-secondary: #8b8b8f;
+  --text-muted: #5a5a5e;
+
+  /* Границы */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Тени */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  /* Радиусы */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Переходы */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+
+  /* Размеры UI */
+  --header-height: 48px;
+  --toolbar-height: 36px;
+  --sidebar-width: 300px;
+  --analytics-height: 80px;
+
+  /* Шрифты */
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ============================================
+ * Reset и базовые стили
+ * ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* ============================================
+ * Header / Toolbar
+ * ============================================ */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--header-height);
+  padding: 0 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent-blue);
+}
+
+.header__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.header__controls .divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+}
+
+.btn--icon.active {
+  background: var(--accent-blue);
+  color: white;
+}
+
+/* Header Timeframe Select (мобильный) */
+.header__timeframe {
+  display: none;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.header__timeframe:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+@media (max-width: 768px) {
+  .header__timeframe {
+    display: block;
+  }
+}
+
+/* ============================================
+ * Timeframes
+ * ============================================ */
+.timeframes {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  height: var(--toolbar-height);
+}
+
+.timeframes::-webkit-scrollbar {
+  display: none;
+}
+
+.timeframe-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.timeframe-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.timeframe-btn.active {
+  background: var(--accent-blue);
+  color: white;
+}
+
+/* Мобильный dropdown для таймфреймов */
+.timeframe-select {
+  display: none;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.timeframe-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+@media (max-width: 768px) {
+  .timeframe-btn {
+    display: none;
+  }
+
+  .timeframe-select {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* Скрываем секцию таймфреймов - теперь в header */
+  .timeframes {
+    display: none !important;
+  }
+}
+
+/* ============================================
+ * Основной layout
+ * ============================================ */
+.main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.chart-area {
+  flex: 1;
+  position: relative;
+  background: var(--bg-primary);
+  min-height: 200px;
+}
+
+/* ============================================
+ * CVD Chart Container
+ * ============================================ */
+.cvd-container {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+/* ============================================
+ * Analytics Panel (ВАЖНО - должна быть видна!)
+ * ============================================ */
+.analytics {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+  min-height: var(--analytics-height);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.metric__label {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric__value {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.metric__value--positive {
+  color: var(--accent-green);
+}
+
+.metric__value--negative {
+  color: var(--accent-red);
+}
+
+/* ============================================
+ * Sidebar с Order Book
+ * ============================================ */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.orderbook__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.orderbook__title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.orderbook__modes {
+  display: flex;
+  gap: 4px;
+}
+
+/* Кнопка закрытия - только мобильные */
+.sidebar__close {
+  display: none;
+  font-size: 18px;
+  padding: 4px 8px;
+  margin-right: 8px;
+}
+
+@media (max-width: 768px) {
+  .sidebar__close {
+    display: block;
+  }
+}
+
+.orderbook__depth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.orderbook__depth label {
+  color: var(--text-muted);
+}
+
+.orderbook__depth select {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.orderbook__content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 200px;
+}
+
+/* ============================================
+ * Кнопки
+ * ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  min-height: 36px;
+  min-width: 44px;
+}
+
+.btn:hover {
+  background: var(--bg-hover);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn--primary {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.btn--primary:hover {
+  background: #448aff;
+}
+
+.btn--icon {
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+}
+
+.btn--small {
+  padding: 4px 10px;
+  font-size: 12px;
+  min-height: 28px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-secondary);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-group .btn {
+  border-radius: 2px;
+}
+
+.btn-group .btn.active {
+  background: var(--accent-blue);
+  color: white;
+}
+
+/* ============================================
+ * Селекторы
+ * ============================================ */
+.selector {
+  position: relative;
+  display: inline-flex;
+}
+
+.selector__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 36px;
+}
+
+.selector__trigger:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+}
+
+.selector__label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.selector__arrow {
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.selector.open .selector__arrow {
+  transform: rotate(180deg);
+}
+
+.selector__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all var(--transition-fast);
+}
+
+.selector.open .selector__dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.selector__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.selector__option:hover {
+  background: var(--bg-hover);
+}
+
+.selector__option.selected {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.selector__search {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.selector__search:focus {
+  outline: none;
+}
+
+.selector__options {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* ============================================
+ * Loading overlay
+ * ============================================ */
+.loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  z-index: 50;
+}
+
+.loading__spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+ * Toast notifications
+ * ============================================ */
+.toast-container {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 400;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  animation: slideIn 0.3s ease;
+}
+
+.toast--success {
+  border-color: var(--accent-green);
+}
+
+.toast--error {
+  border-color: var(--accent-red);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+ * Scrollbar
+ * ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
+}
+
+/* ============================================
+ * Mobile Bottom Toolbar
+ * ============================================ */
+.mobile-toolbar {
+  display: none;
+}
+
+/* Bottom Nav - по умолчанию скрыт на desktop */
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 100vw;
+  }
+
+  .sidebar {
+    position: fixed;
+    right: -100%;
+    top: 0;
+    height: 100%;
+    transition: right var(--transition-normal);
+    z-index: 200;
+  }
+
+  .sidebar.active {
+    right: 0;
+  }
+
+  .analytics {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 8px;
+    gap: 6px;
+  }
+
+  /* ============================================
+   * Bottom Navigation - App Style
+   * ============================================ */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: linear-gradient(to top, var(--bg-primary), var(--bg-secondary));
+    border-top: 1px solid var(--border-color);
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom);
+    backdrop-filter: blur(10px);
+  }
+
+  .bottom-nav__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+  }
+
+  .bottom-nav__btn:active {
+    transform: scale(0.95);
+  }
+
+  .bottom-nav__btn.active {
+    color: var(--accent-blue);
+    background: rgba(41, 121, 255, 0.1);
+  }
+
+  .bottom-nav__icon {
+    font-size: 22px;
+  }
+
+  .bottom-nav__label {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /* Hide old toolbar */
+  .mobile-toolbar {
+    display: none !important;
+  }
+
+  /* Padding for main content */
+  .main-content {
+    padding-bottom: 70px;
+  }
+
+  .toast-container {
+    bottom: 80px;
+  }
+
+  /* Sidebar full screen on mobile */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 60px;
+    width: 100%;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 150;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 480px) {
+
+  /* ============================================
+   * Компактный Header для мобильных
+   * ============================================ */
+  .header {
+    height: 40px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .header__logo {
+    font-size: 14px;
+    gap: 4px;
+  }
+
+  .header__logo span:last-child {
+    display: none;
+    /* Скрываем текст "OrderBook Pro" */
+  }
+
+  /* СКРЫВАЕМ ДУБЛИ КНОПОК В HEADER! */
+  .header__controls {
+    display: none !important;
+  }
+
+  /* Компактные селекторы */
+  .selector__trigger {
+    padding: 4px 8px;
+    min-height: 28px;
+    font-size: 12px;
+  }
+
+  .selector__label {
+    font-size: 12px;
+  }
+
+  .selector__arrow {
+    font-size: 10px;
+  }
+
+  /* ============================================
+   * Таймфреймы - скрываем полностью, только dropdown
+   * ============================================ */
+  .timeframes {
+    height: 32px;
+    padding: 4px 8px;
+  }
+
+  /* ============================================
+   * Метрики - ОБЯЗАТЕЛЬНО ВИДИМЫЕ!
+   * ============================================ */
+  .analytics {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 6px 8px;
+    min-height: 60px;
+  }
+
+  .metric {
+    padding: 6px 8px;
+  }
+
+  .metric__label {
+    font-size: 9px;
+  }
+
+  .metric__value {
+    font-size: 13px;
+  }
+
+  /* ============================================
+   * CVD - компактный с отступом для bottom-nav
+   * ============================================ */
+  .cvd-container {
+    height: 50px;
+    min-height: 50px;
+  }
+
+  /* ============================================
+   * Main content - отступ снизу для bottom-nav
+   * ============================================ */
+  .chart-container {
+    padding-bottom: 60px;
+    /* Место для bottom-nav */
+  }
+
+  /* ============================================
+   * Sidebar на весь экран
+   * ============================================ */
+  .sidebar {
+    width: 100%;
+    bottom: 60px;
+    /* Не перекрывать bottom-nav */
+  }
+
+  .orderbook__header {
+    padding: 8px 12px;
+  }
+
+  /* ============================================
+   * Скрываем ненужные элементы
+   * ============================================ */
+  .orderbook__depth {
+    padding: 6px 12px;
+  }
+}
