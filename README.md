@@ -2,7 +2,7 @@
 
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF.svg)](https://vitejs.dev/)
-[![Lightweight Charts](https://img.shields.io/badge/Charts-Lightweight_Charts-0088cc.svg)](https://tradingview.github.io/lightweight-charts/)
+[![KLineChart](https://img.shields.io/badge/Charts-KLineChart-0088cc.svg)](https://klinecharts.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 A **professional-grade** cryptocurrency order book visualization platform with real-time heatmaps, advanced analytics, and mobile-first design. Built for traders who need **institutional-level tools** in a clean, responsive interface.
@@ -22,9 +22,11 @@ Traditional order book tools either:
 **Quant Order Book solves these problems** by providing:
 
 ✅ **Real-Time Heatmap** — 5000 order book levels visualized on chart  
+✅ **Advanced Drawing Tools** — Trend lines, Fibonacci, Channels, Rectangles, Text, etc.
+✅ **Technical Indicators** — MA, EMA, BOLL, MACD, KDJ, RSI, and 20+ more
 ✅ **Multi-Exchange** — Binance, OKX, Bybit support  
 ✅ **Quant Metrics** — Index α, Delta, CVD, Imbalance, Spread  
-✅ **Mobile-First** — TradingView-like experience on phone  
+✅ **Mobile-First** — TradingView-like experience on phone with bottom navigation
 ✅ **Zero Cost** — Free, open-source, no subscriptions  
 
 ---
@@ -33,7 +35,7 @@ Traditional order book tools either:
 
 | Desktop | Mobile |
 |---------|--------|
-| Heatmap + Candlesticks | Bottom Navigation |
+| Heatmap + Drawing Tools | Bottom Navigation + Indicators |
 | CVD Chart | Compact Metrics |
 
 ---
@@ -79,7 +81,23 @@ Real-time visualization of order book depth overlaid on candlestick chart:
 - **Green zones** = Bid orders (buyers)
 - **Red zones** = Ask orders (sellers)  
 - **Brightness** = Volume intensity
-- **5000 levels** loaded from Binance REST API
+- **Auto-Scroll** = Heatmap follows the chart view
+
+### ✏️ Professional Drawing Tools
+
+Full suite of technical analysis tools powered by KLineChart:
+- **Lines**: Trend Line, Ray, Straight Line
+- **Levels**: Horizontal Ray, Segment, Price Line
+- **Shapes**: Rectangle, Circle, Channels, Fibonacci
+- **Annotations**: Text Notes, Tags
+
+### 📊 Indicators
+
+Comprehensive library of technical indicators:
+- **Trend**: MA, EMA, SMA, BOLL, SAR, BBI
+- **Oscillators**: MACD, KDJ, RSI, CCI, AO, ROC
+- **Volume**: VOL, OBV, MFI, PVT
+- **Others**: WR, MTM, CR, DMA, TRIX
 
 ### 📊 Advanced Analytics
 
@@ -96,6 +114,7 @@ Real-time visualization of order book depth overlaid on candlestick chart:
 - **Bottom Navigation** — 5 tabs: Chart, Draw, Book, Info, Settings
 - **Compact Header** — Exchange, Symbol, Timeframe in one row
 - **Touch-Optimized** — Swipe, pinch-zoom, responsive layout
+- **Optimized Order Book** — Full-screen sidebar view
 
 ### 🏦 Multi-Exchange Support
 
@@ -114,10 +133,10 @@ Real-time visualization of order book depth overlaid on candlestick chart:
 orderbook-pro/
 ├── index.html              # Entry point
 ├── src/
-│   ├── main.js             # App initialization
+│   ├── main.js             # App initialization & UI Logic
 │   ├── charts/
-│   │   ├── CandlestickChart.js    # Lightweight Charts wrapper
-│   │   ├── OrderBookHeatmap.js    # Canvas-based heatmap
+│   │   ├── CandlestickChart.js    # KLineChart wrapper
+│   │   ├── OrderBookHeatmap.js    # KLineChart Overlay Heatmap
 │   │   ├── CVDChart.js            # D3.js CVD visualization
 │   │   ├── DepthChart.js          # Order book depth
 │   │   └── DOMLadder.js           # DOM ladder view
@@ -161,18 +180,16 @@ Color presets: Classic, TradingView, Binance, Monochrome
 
 ### Key Technologies
 
-- **Lightweight Charts** v4 — High-performance financial charts
+- **KLineChart** — Professional financial charting engine
 - **D3.js** — CVD chart visualization  
-- **Canvas 2D** — Order book heatmap rendering
 - **WebSocket** — Real-time data streaming
 - **Vite** — Fast dev server and bundler
 
 ### Performance
 
-- 60 FPS heatmap rendering
+- Overlay-based heatmap rendering
 - Efficient WebSocket message handling
 - Debounced re-renders on settings change
-- Canvas-based drawing for minimal DOM overhead
 
 ---
 

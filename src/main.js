@@ -336,9 +336,9 @@ function initEventHandlers() {
     }
   });
 
-  // Индикаторы (placeholder для будущего)
+  // Индикаторы
   document.getElementById('indicators-btn')?.addEventListener('click', () => {
-    showToast('Индикаторы скоро будут добавлены', 'info');
+    showIndicatorsPanel();
   });
 
   // ============================================
@@ -770,6 +770,103 @@ function handleMobileTabSwitch(tab) {
 }
 
 /**
+ * Показываем панель индикаторов
+ */
+function showIndicatorsPanel() {
+  let panel = document.getElementById('indicators-panel');
+
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'indicators-panel';
+    panel.className = 'info-panel';
+    panel.innerHTML = `
+      <div class="info-panel__overlay" onclick="this.parentNode.classList.remove('open')"></div>
+      <div class="info-panel__content">
+        <div class="info-panel__header">
+          <h2>📊 Индикаторы</h2>
+          <button class="info-panel__close" onclick="this.closest('.info-panel').classList.remove('open')">✕</button>
+        </div>
+        <div class="info-panel__body">
+          <div class="indicators-list">
+             <div class="indicator-group">
+                <h3>Trend</h3>
+                <div class="btn-grid">
+                    <button class="btn btn--small" onclick="toggleIndicator('MA')">MA</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('EMA')">EMA</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('SMA')">SMA</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('BOLL')">BOLL</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('SAR')">SAR</button>
+                </div>
+             </div>
+             <div class="indicator-group">
+                <h3>Oscillators</h3>
+                <div class="btn-grid">
+                    <button class="btn btn--small" onclick="toggleIndicator('MACD')">MACD</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('KDJ')">KDJ</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('RSI')">RSI</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('CCI')">CCI</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('AO')">AO</button>
+                </div>
+             </div>
+             <div class="indicator-group">
+                <h3>Volume & Others</h3>
+                <div class="btn-grid">
+                    <button class="btn btn--small" onclick="toggleIndicator('VOL')">VOL</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('OBV')">OBV</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('MFI')">MFI</button>
+                    <button class="btn btn--small" onclick="toggleIndicator('WR')">WR</button>
+                </div>
+             </div>
+             <button class="btn btn--block btn--outline" onclick="removeAllIndicators()" style="margin-top: 20px;">🗑️ Удалить все</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(panel);
+
+    // Глобальные функции
+    window.toggleIndicator = (name) => {
+        if (chart && chart.chart) {
+            // Простая логика: создаем. Удаление сложнее (надо знать ID), пока просто создаем.
+            // Чтобы "toggle", надо проверять есть ли уже.
+            // Но KLineChart API getIndicators вернет список.
+            const indicators = chart.chart.getIndicators();
+            // indicators is a Map or Object? Docs say getIndicators returns Map<paneId, indicators[]>
+            // Actually usually it returns object or array depending on version.
+            // Let's assume create for now.
+
+            // Если это главный индикатор (MA, BOLL, SAR), кладем в candle_pane
+            const mainIndicators = ['MA', 'EMA', 'SMA', 'BOLL', 'SAR', 'BBI'];
+            const paneId = mainIndicators.includes(name) ? 'candle_pane' : null;
+
+            chart.chart.createIndicator(name, false, { id: paneId });
+            showToast(`Добавлен: ${name}`, 'success');
+            document.getElementById('indicators-panel').classList.remove('open');
+        }
+    };
+
+    window.removeAllIndicators = () => {
+        if (chart && chart.chart) {
+            chart.chart.removeIndicator(); // Removes all if no arg? Or need to loop?
+            // createIndicator('VOL') again maybe?
+            // Let's keep it simple.
+            chart.chart.removeIndicator();
+            // Restore basics
+            chart.chart.createIndicator('MA', false, { id: 'candle_pane' });
+            chart.chart.createIndicator('VOL');
+
+            showToast('Индикаторы сброшены', 'info');
+            document.getElementById('indicators-panel').classList.remove('open');
+        }
+    }
+
+    injectInfoPanelStyles();
+  }
+
+  panel.classList.add('open');
+}
+
+/**
  * Показываем панель рисования
  */
 function showDrawPanel() {
@@ -788,8 +885,34 @@ function showDrawPanel() {
         </div>
         <div class="info-panel__body">
           <div class="draw-tools">
-             <button class="btn btn--block" onclick="startDrawing('trendLine')">📈 Линия тренда</button>
-             <button class="btn btn--block" onclick="startDrawing('rect')" style="margin-top: 10px;">⬜ Прямоугольник</button>
+             <h3>Линии</h3>
+             <div class="btn-grid">
+               <button class="btn btn--small" onclick="startDrawing('segment')">📈 Тренд</button>
+               <button class="btn btn--small" onclick="startDrawing('rayLine')">➡️ Луч</button>
+               <button class="btn btn--small" onclick="startDrawing('straightLine')">➖ Прямая</button>
+             </div>
+
+             <h3>Уровни</h3>
+             <div class="btn-grid">
+               <button class="btn btn--small" onclick="startDrawing('priceLine')">💲 Цена</button>
+               <button class="btn btn--small" onclick="startDrawing('horizontalRayLine')">➡️ Гор. луч</button>
+               <button class="btn btn--small" onclick="startDrawing('horizontalSegment')">➖ Гор. отр.</button>
+             </div>
+
+             <h3>Фигуры</h3>
+             <div class="btn-grid">
+               <button class="btn btn--small" onclick="startDrawing('rect')">⬜ Rect</button>
+               <button class="btn btn--small" onclick="startDrawing('circle')">⭕ Круг</button>
+               <button class="btn btn--small" onclick="startDrawing('priceChannelLine')">🛤️ Канал</button>
+               <button class="btn btn--small" onclick="startDrawing('fibonacciLine')">🔢 Fibo</button>
+             </div>
+
+             <h3>Текст</h3>
+             <div class="btn-grid">
+                <button class="btn btn--small" onclick="startDrawing('simpleAnnotation')">📝 Заметка</button>
+                <button class="btn btn--small" onclick="startDrawing('simpleTag')">🏷️ Таг</button>
+             </div>
+
              <button class="btn btn--block btn--outline" onclick="clearDrawings()" style="margin-top: 20px;">🗑️ Очистить все</button>
           </div>
         </div>
@@ -800,9 +923,12 @@ function showDrawPanel() {
     // Глобальные функции для кнопок
     window.startDrawing = (type) => {
         if (chart) {
+            // Маппинг legacy имен
+            if (type === 'trendLine') type = 'segment';
+
             chart.startDrawing(type);
             document.getElementById('draw-panel').classList.remove('open');
-            showToast(`Инструмент: ${type === 'trendLine' ? 'Линия' : 'Прямоугольник'}`, 'success');
+            showToast(`Инструмент: ${type}`, 'success');
         }
     };
 

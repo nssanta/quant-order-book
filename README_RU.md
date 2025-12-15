@@ -2,7 +2,7 @@
 
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-yellow.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF.svg)](https://vitejs.dev/)
-[![Lightweight Charts](https://img.shields.io/badge/Charts-Lightweight_Charts-0088cc.svg)](https://tradingview.github.io/lightweight-charts/)
+[![KLineChart](https://img.shields.io/badge/Charts-KLineChart-0088cc.svg)](https://klinecharts.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 **Профессиональная** платформа визуализации криптовалютного стакана с тепловыми картами в реальном времени, продвинутой аналитикой и mobile-first дизайном. Создана для трейдеров, которым нужны **институциональные инструменты** в чистом, отзывчивом интерфейсе.
@@ -22,9 +22,11 @@
 **Quant Order Book решает эти проблемы:**
 
 ✅ **Тепловая карта в реальном времени** — 5000 уровней стакана на графике  
+✅ **Профессиональное рисование** — Трендовые, Фибоначчи, Каналы, Текст, Фигуры
+✅ **Технические индикаторы** — MA, EMA, MACD, RSI, Bollinger Bands и ещё 20+
 ✅ **Мульти-биржа** — Binance, OKX, Bybit  
 ✅ **Quant-метрики** — Index α, Delta, CVD, Imbalance, Spread  
-✅ **Mobile-First** — опыт как в TradingView на телефоне  
+✅ **Mobile-First** — удобная нижняя навигация и адаптивность
 ✅ **Бесплатно** — open-source, без подписок  
 
 ---
@@ -70,7 +72,23 @@ npm run preview
 - **Зелёные зоны** = Bid-ордера (покупатели)
 - **Красные зоны** = Ask-ордера (продавцы)  
 - **Яркость** = Интенсивность объёма
-- **5000 уровней** загружается через Binance REST API
+- **Авто-скролл** = Карта следует за графиком
+
+### ✏️ Инструменты рисования
+
+Полный набор инструментов на базе KLineChart:
+- **Линии**: Тренд, Луч, Прямая
+- **Уровни**: Горизонтальный луч, Отрезок, Ценовая линия
+- **Фигуры**: Прямоугольник, Круг, Каналы, Фибоначчи
+- **Текст**: Заметки, Таги
+
+### 📊 Индикаторы
+
+Обширная библиотека встроенных индикаторов:
+- **Тренд**: MA, EMA, SMA, BOLL, SAR, BBI
+- **Осцилляторы**: MACD, KDJ, RSI, CCI, AO, ROC
+- **Объём**: VOL, OBV, MFI, PVT
+- **Другие**: WR, MTM, CR, DMA, TRIX
 
 ### 📊 Продвинутая аналитика
 
@@ -87,6 +105,7 @@ npm run preview
 - **Bottom Navigation** — 5 вкладок: Chart, Draw, Book, Info, Settings
 - **Компактный Header** — Биржа, Пара, Таймфрейм в одну строку
 - **Touch-Optimized** — Свайпы, пинч-зум, адаптивная вёрстка
+- **Оптимизированный стакан** — Сайдбар на весь экран
 
 ### 🏦 Поддержка бирж
 
@@ -105,10 +124,10 @@ npm run preview
 orderbook-pro/
 ├── index.html              # Точка входа
 ├── src/
-│   ├── main.js             # Инициализация приложения
+│   ├── main.js             # Инициализация и UI логика
 │   ├── charts/
-│   │   ├── CandlestickChart.js    # Обёртка Lightweight Charts
-│   │   ├── OrderBookHeatmap.js    # Canvas тепловая карта
+│   │   ├── CandlestickChart.js    # KLineChart обёртка
+│   │   ├── OrderBookHeatmap.js    # Хитмап на оверлеях
 │   │   ├── CVDChart.js            # D3.js CVD визуализация
 │   │   ├── DepthChart.js          # Глубина стакана
 │   │   └── DOMLadder.js           # DOM Ladder вид
@@ -152,18 +171,16 @@ orderbook-pro/
 
 ### Ключевые технологии
 
-- **Lightweight Charts** v4 — Высокопроизводительные финансовые графики
+- **KLineChart** — Профессиональный движок для финансовых графиков
 - **D3.js** — CVD chart визуализация  
-- **Canvas 2D** — Рендеринг тепловой карты
 - **WebSocket** — Стриминг данных в реальном времени
 - **Vite** — Быстрый dev сервер и сборщик
 
 ### Производительность
 
-- 60 FPS рендеринг тепловой карты
+- Отрисовка хитмапа через оверлеи
 - Эффективная обработка WebSocket сообщений
 - Debounced ре-рендер при изменении настроек
-- Canvas-based рисование для минимальной нагрузки на DOM
 
 ---
 
