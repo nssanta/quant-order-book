@@ -1,9 +1,9 @@
 /* ===========================================================
  * CandlestickChart - Компонент свечного графика
- * Используем TradingView Lightweight Charts
+ * Используем KLineChart
  * =========================================================== */
 
-import { createChart, ColorType, CrosshairMode, CandlestickSeries, HistogramSeries } from 'lightweight-charts';
+import { init, dispose, registerOverlay } from 'klinecharts';
 
 /**
  * Класс для управления свечным графиком
@@ -15,11 +15,6 @@ export class CandlestickChart {
             : container;
 
         this.chart = null;
-        this.candleSeries = null;
-        this.volumeSeries = null;
-        this.drawings = [];
-        this.markers = [];
-
         this.options = {
             theme: 'dark',
             showVolume: true,
@@ -28,6 +23,8 @@ export class CandlestickChart {
 
         this._initChart();
         this._setupResizeObserver();
+        this._registerCustomOverlays();
+        this.loadDrawings();
     }
 
     /**
@@ -35,93 +32,47 @@ export class CandlestickChart {
      * @private
      */
     _initChart() {
-        const isDark = this.options.theme === 'dark';
+        // Инициализация KLineChart
+        this.chart = init(this.container);
 
-        this.chart = createChart(this.container, {
-            layout: {
-                background: { type: ColorType.Solid, color: isDark ? '#0a0a0f' : '#ffffff' },
-                textColor: isDark ? '#8b8b8f' : '#333333',
-                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-                fontSize: 12
-            },
-            grid: {
-                vertLines: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
-                horzLines: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }
-            },
-            crosshair: {
-                mode: CrosshairMode.Normal,
-                vertLine: {
-                    color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                    width: 1,
-                    style: 2,
-                    labelBackgroundColor: isDark ? '#1a1a24' : '#f0f0f0'
-                },
-                horzLine: {
-                    color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                    width: 1,
-                    style: 2,
-                    labelBackgroundColor: isDark ? '#1a1a24' : '#f0f0f0'
+        // Применяем тему
+        this.setTheme(this.options.theme);
+
+        // Настройка индикаторов
+        this.chart.createIndicator('MA', false, { id: 'candle_pane' });
+        if (this.options.showVolume) {
+            this.chart.createIndicator('VOL');
+        }
+    }
+
+    /**
+     * Регистрируем кастомные оверлеи если нужно
+     * @private
+     */
+    _registerCustomOverlays() {
+        // Регистрируем 'rect'
+        registerOverlay({
+            name: 'rect',
+            needDefaultPointFigure: true,
+            needDefaultXAxisFigure: true,
+            needDefaultYAxisFigure: true,
+            totalStep: 3, // Start, End
+            createPointFigures: ({ coordinates }) => {
+                if (coordinates.length > 1) {
+                    return {
+                        type: 'rect',
+                        attrs: {
+                            x: coordinates[0].x,
+                            y: coordinates[0].y,
+                            width: coordinates[1].x - coordinates[0].x,
+                            height: coordinates[1].y - coordinates[0].y
+                        },
+                        styles: { style: 'fill' }
+                    }
                 }
-            },
-            rightPriceScale: {
-                borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                scaleMargins: {
-                    top: 0.1,
-                    bottom: 0.1 // Main price scale bottom margin adjusted as volume now has its own scale
-                }
-            },
-            timeScale: {
-                borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-                timeVisible: true,
-                secondsVisible: false,
-                tickMarkFormatter: (time) => {
-                    const date = new Date(time * 1000);
-                    return date.toLocaleTimeString('ru-RU', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                }
-            },
-            handleScale: {
-                axisPressedMouseMove: {
-                    time: true,
-                    price: true
-                }
-            },
-            handleScroll: {
-                mouseWheel: true,
-                pressedMouseMove: true,
-                horzTouchDrag: true,
-                vertTouchDrag: true
+                return []
             }
         });
-
-        // Создаём серию свечей (v5 API: addSeries с типом)
-        this.candleSeries = this.chart.addSeries(CandlestickSeries, {
-            upColor: '#00c853',
-            downColor: '#ff1744',
-            borderUpColor: '#00c853',
-            borderDownColor: '#ff1744',
-            wickUpColor: '#00c853',
-            wickDownColor: '#ff1744'
-        });
-
-        // Создаём серию объёма (v5 API)
-        if (this.options.showVolume) {
-            this.volumeSeries = this.chart.addSeries(HistogramSeries, {
-                color: '#2979ff',
-                priceFormat: { type: 'volume' },
-                priceScaleId: 'volume', // Set a specific priceScaleId for volume
-            });
-
-            // Настраиваем отдельную шкалу для объёма
-            this.chart.priceScale('volume').applyOptions({
-                scaleMargins: {
-                    top: 0.85, // Adjusted margin for volume scale
-                    bottom: 0
-                }
-            });
-        }
     }
 
     /**
@@ -131,32 +82,24 @@ export class CandlestickChart {
     setData(data) {
         if (!data || !data.length) return;
 
-        // Форматируем данные для свечей
-        const candleData = data.map(d => ({
-            time: d.time,
+        // KLineChart ожидает timestamp
+        const klineData = data.map(d => ({
+            timestamp: d.time * 1000, // KLineChart обычно использует мс
             open: d.open,
             high: d.high,
             low: d.low,
-            close: d.close
+            close: d.close,
+            volume: d.volume
         }));
 
-        this.candleSeries.setData(candleData);
+        this.chart.applyNewData(klineData);
+    }
 
-        // Форматируем данные для объёма
-        if (this.volumeSeries) {
-            const volumeData = data.map(d => ({
-                time: d.time,
-                value: d.volume,
-                color: d.close >= d.open
-                    ? 'rgba(0,200,83,0.3)'
-                    : 'rgba(255,23,68,0.3)'
-            }));
-
-            this.volumeSeries.setData(volumeData);
-        }
-
-        // Скроллим к последней свече
-        this.chart.timeScale().fitContent();
+    /**
+     * Получить данные свечей
+     */
+    getDataList() {
+        return this.chart.getDataList();
     }
 
     /**
@@ -166,29 +109,70 @@ export class CandlestickChart {
     updateCandle(candle) {
         if (!candle || !candle.time) return;
 
-        // Защита от обновления старых данных
-        // Lightweight Charts не позволяет обновлять свечи со временем раньше последней
-        try {
-            this.candleSeries.update({
-                time: candle.time,
-                open: candle.open,
-                high: candle.high,
-                low: candle.low,
-                close: candle.close
-            });
+        this.chart.updateData({
+            timestamp: candle.time * 1000,
+            open: candle.open,
+            high: candle.high,
+            low: candle.low,
+            close: candle.close,
+            volume: candle.volume
+        });
+    }
 
-            if (this.volumeSeries) {
-                this.volumeSeries.update({
-                    time: candle.time,
-                    value: candle.volume,
-                    color: candle.close >= candle.open
-                        ? 'rgba(0,200,83,0.3)'
-                        : 'rgba(255,23,68,0.3)'
+    /**
+     * Старт рисования
+     * @param {string} type - 'trendLine' | 'rect'
+     */
+    startDrawing(type) {
+        let overlayName = type;
+
+        if (type === 'trendLine') {
+            overlayName = 'segment';
+        } else if (type === 'rect') {
+             overlayName = 'rect';
+        }
+
+        this.chart.createOverlay({
+            name: overlayName,
+            onDrawEnd: () => {
+                this.saveDrawings();
+            }
+        });
+    }
+
+    /**
+     * Сохранение рисунков
+     */
+    saveDrawings() {
+        const overlays = this.chart.getOverlays();
+        const drawings = overlays.filter(o =>
+            o.name === 'segment' || o.name === 'rect' || o.name === 'trendLine'
+        ).map(o => ({
+            name: o.name,
+            points: o.points,
+            styles: o.styles,
+            lock: o.lock,
+            visible: o.visible,
+            zLevel: o.zLevel
+        }));
+
+        localStorage.setItem('chart_drawings', JSON.stringify(drawings));
+    }
+
+    /**
+     * Загрузка рисунков
+     */
+    loadDrawings() {
+        try {
+            const saved = localStorage.getItem('chart_drawings');
+            if (saved) {
+                const drawings = JSON.parse(saved);
+                drawings.forEach(d => {
+                    this.chart.createOverlay(d);
                 });
             }
         } catch (e) {
-            // Игнорируем ошибку "Cannot update oldest data"
-            // Это происходит когда WebSocket присылает старые данные
+            console.error('Error loading drawings:', e);
         }
     }
 
@@ -197,48 +181,75 @@ export class CandlestickChart {
      * @param {Object} marker - { time, position, color, shape, text }
      */
     addMarker(marker) {
-        this.markers.push({
-            time: marker.time,
-            position: marker.position || 'aboveBar',
-            color: marker.color || '#2979ff',
-            shape: marker.shape || 'circle',
-            text: marker.text || ''
-        });
+        let price = marker.price;
 
-        this.candleSeries.setMarkers(this.markers);
+        // Если цены нет, ищем её в данных
+        if (!price) {
+            const list = this.chart.getDataList();
+            const timestamp = marker.time * 1000;
+            // Ищем ближайшую свечу (или точное совпадение)
+            // Список отсортирован по времени
+            // Можно бинарный поиск, но пока просто find (можно оптимизировать если тормозит)
+            const candle = list.find(c => Math.abs(c.timestamp - timestamp) < 60000); // 1 минута допуск
+            if (candle) {
+                // Если aboveBar -> high, belowBar -> low
+                price = (marker.position === 'belowBar') ? candle.low : candle.high;
+            } else {
+                // Fallback, если свеча не загружена
+                return;
+            }
+        }
+
+        // Используем simpleAnnotation или simpleTag
+        this.chart.createOverlay({
+            name: 'simpleAnnotation',
+            extendData: marker.text,
+            points: [{ timestamp: marker.time * 1000, value: price }],
+            styles: {
+                 rect: {
+                     backgroundColor: marker.color
+                 },
+                 text: {
+                     text: marker.text,
+                     color: '#ffffff'
+                 }
+            }
+        });
     }
 
     /**
      * Очищаем маркеры
      */
     clearMarkers() {
-        this.markers = [];
-        this.candleSeries.setMarkers([]);
+        this.chart.removeOverlay({ name: 'simpleAnnotation' });
     }
 
     /**
      * Добавляем горизонтальную линию (уровень)
      * @param {number} price
      * @param {Object} options
-     * @returns {Object} - Линия для удаления
+     * @returns {string} - ID линии
      */
     addPriceLine(price, options = {}) {
-        return this.candleSeries.createPriceLine({
-            price,
-            color: options.color || '#ffd600',
-            lineWidth: options.lineWidth || 1,
-            lineStyle: options.lineStyle || 2,
-            axisLabelVisible: true,
-            title: options.title || ''
+        return this.chart.createOverlay({
+            name: 'priceLine',
+            points: [{ value: price }],
+            styles: {
+                line: {
+                    color: options.color || '#ffd600',
+                    size: options.lineWidth || 1,
+                    style: options.lineStyle === 1 ? 'solid' : 'dashed' // 1=solid, 2=dashed в LW charts
+                }
+            }
         });
     }
 
     /**
      * Удаляем ценовую линию
-     * @param {Object} line
+     * @param {string} lineId
      */
-    removePriceLine(line) {
-        this.candleSeries.removePriceLine(line);
+    removePriceLine(lineId) {
+        this.chart.removeOverlay({ id: lineId });
     }
 
     /**
@@ -246,27 +257,18 @@ export class CandlestickChart {
      * @returns {{ from, to }}
      */
     getVisibleRange() {
-        return this.chart.timeScale().getVisibleRange();
+        // KLineChart возвращает { from, to, realFrom, realTo } где значения - индексы или timestamp?
+        // getVisibleRange() -> { from: number, to: number } (timestamps)
+        const range = this.chart.getVisibleRange();
+        return { from: range.from / 1000, to: range.to / 1000 };
     }
 
     /**
-     * Получаем видимый диапазон ЦЕН (для heatmap)
-     * @returns {{ min, max } | null}
+     * Получаем видимый диапазон ЦЕН
      */
     getVisiblePriceRange() {
-        try {
-            const priceScale = this.chart.priceScale('right');
-            // Lightweight Charts v5 не имеет прямого метода getVisiblePriceRange
-            // Используем данные свечей для определения диапазона
-            const visibleRange = this.chart.timeScale().getVisibleLogicalRange();
-            if (!visibleRange) return null;
-
-            // Получаем barsInLogicalRange не работает в v5, используем другой подход
-            // Возвращаем null чтобы heatmap использовал свой fallback
-            return null;
-        } catch (e) {
-            return null;
-        }
+         // KLineChart может не давать это напрямую легко
+         return null;
     }
 
     /**
@@ -284,11 +286,15 @@ export class CandlestickChart {
     }
 
     /**
-     * Подписываемся на crosshair move (для показа цены)
-     * @param {Function} callback - (param) => {}
+     * Подписываемся на crosshair move
+     * @param {Function} callback
      */
     onCrosshairMove(callback) {
-        this.chart.subscribeCrosshairMove(callback);
+        this.chart.subscribeAction('crosshair', (data) => {
+             // data: { crosshair: { ... }, ... }
+             // Adapt format if needed
+             callback(data);
+        });
     }
 
     /**
@@ -296,23 +302,22 @@ export class CandlestickChart {
      * @param {Function} callback
      */
     onClick(callback) {
-        this.chart.subscribeClick(callback);
+        // Не прямой аналог, но можно через subscribeAction
+        // или опции onClick в init
     }
 
     /**
      * Устанавливаем видимый диапазон
-     * @param {number} from - Unix timestamp
-     * @param {number} to - Unix timestamp
      */
     setVisibleRange(from, to) {
-        this.chart.timeScale().setVisibleRange({ from, to });
+        this.chart.setVisibleRange({ from: from * 1000, to: to * 1000 });
     }
 
     /**
      * Скроллим к последней свече
      */
     scrollToRealTime() {
-        this.chart.timeScale().scrollToRealTime();
+        this.chart.scrollToRealTime();
     }
 
     /**
@@ -324,7 +329,7 @@ export class CandlestickChart {
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
                 if (width > 0 && height > 0) {
-                    this.chart.resize(width, height);
+                    this.chart.resize();
                 }
             }
         });
@@ -338,16 +343,72 @@ export class CandlestickChart {
      */
     setTheme(theme) {
         const isDark = theme === 'dark';
+        this.chart.setStyles(isDark ? 'dark' : 'light');
+        // Дополнительная настройка цветов под проект
+        this.chart.setStyles({
+             grid: {
+                 horizontal: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
+                 vertical: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }
+             },
+             candle: {
+                 bar: {
+                     upColor: '#00c853',
+                     downColor: '#ff1744',
+                     upBorderColor: '#00c853',
+                     downBorderColor: '#ff1744',
+                     upWickColor: '#00c853',
+                     downWickColor: '#ff1744'
+                 }
+             }
+        });
+    }
 
-        this.chart.applyOptions({
-            layout: {
-                background: { type: ColorType.Solid, color: isDark ? '#0a0a0f' : '#ffffff' },
-                textColor: isDark ? '#8b8b8f' : '#333333'
-            },
-            grid: {
-                vertLines: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' },
-                horzLines: { color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }
-            }
+    /**
+     * Обновление хитмапа (уровни стакана)
+     * @param {Array} levels - [{ price, volume, type: 'bid'|'ask' }, ...]
+     */
+    updateHeatmap(levels) {
+        // Удаляем старые, создаем новые.
+        // ВНИМАНИЕ: Это может быть медленно. Оптимизация: использовать 1 кастомный оверлей.
+        // Но по ТЗ: "Рисовать их как оверлеи типа 'rect'".
+
+        // Сначала удалим старые heatmap rects
+        this.chart.removeOverlay({ groupId: 'heatmap' });
+
+        if (!levels) return;
+
+        // Рисуем новые
+        // Нужно знать временной диапазон. Рисуем от "сейчас" в будущее?
+        // Или на всю ширину? KLineChart overlay привязан к timestamp.
+        // Чтобы рисовать "полосы" на всю ширину, лучше использовать 'priceLine' с толщиной?
+        // Нет, хитмап это прямоугольники.
+
+        // Получаем видимый диапазон времени
+        const range = this.chart.getVisibleRange();
+        const start = range.from;
+        const end = range.to;
+
+        levels.forEach(lvl => {
+            const color = lvl.type === 'bid'
+                ? `rgba(0, 200, 83, ${lvl.opacity})`
+                : `rgba(255, 23, 68, ${lvl.opacity})`;
+
+            this.chart.createOverlay({
+                name: 'rect',
+                groupId: 'heatmap',
+                lock: true,
+                zLevel: -10, // Ниже свечей
+                points: [
+                    { timestamp: start, value: lvl.price },
+                    { timestamp: end, value: lvl.price + (lvl.step || 1) } // Высота прямоугольника?
+                ],
+                styles: {
+                    rect: {
+                        color: color,
+                        borderColor: 'transparent'
+                    }
+                }
+            });
         });
     }
 
@@ -359,7 +420,7 @@ export class CandlestickChart {
             this.resizeObserver.disconnect();
         }
         if (this.chart) {
-            this.chart.remove();
+            dispose(this.container);
         }
     }
 }

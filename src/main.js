@@ -746,8 +746,8 @@ function handleMobileTabSwitch(tab) {
       break;
 
     case 'draw':
-      // TODO: Открыть панель рисования
-      showToast('Рисование скоро будет добавлено', 'info');
+      // Открыть панель рисования
+      showDrawPanel();
       break;
 
     case 'book':
@@ -767,6 +767,59 @@ function handleMobileTabSwitch(tab) {
       }
       break;
   }
+}
+
+/**
+ * Показываем панель рисования
+ */
+function showDrawPanel() {
+  let drawPanel = document.getElementById('draw-panel');
+
+  if (!drawPanel) {
+    drawPanel = document.createElement('div');
+    drawPanel.id = 'draw-panel';
+    drawPanel.className = 'info-panel'; // Используем тот же стиль
+    drawPanel.innerHTML = `
+      <div class="info-panel__overlay" onclick="this.parentNode.classList.remove('open')"></div>
+      <div class="info-panel__content">
+        <div class="info-panel__header">
+          <h2>✏️ Рисование</h2>
+          <button class="info-panel__close" onclick="this.closest('.info-panel').classList.remove('open')">✕</button>
+        </div>
+        <div class="info-panel__body">
+          <div class="draw-tools">
+             <button class="btn btn--block" onclick="startDrawing('trendLine')">📈 Линия тренда</button>
+             <button class="btn btn--block" onclick="startDrawing('rect')" style="margin-top: 10px;">⬜ Прямоугольник</button>
+             <button class="btn btn--block btn--outline" onclick="clearDrawings()" style="margin-top: 20px;">🗑️ Очистить все</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(drawPanel);
+
+    // Глобальные функции для кнопок
+    window.startDrawing = (type) => {
+        if (chart) {
+            chart.startDrawing(type);
+            document.getElementById('draw-panel').classList.remove('open');
+            showToast(`Инструмент: ${type === 'trendLine' ? 'Линия' : 'Прямоугольник'}`, 'success');
+        }
+    };
+
+    window.clearDrawings = () => {
+        if (chart && chart.chart) {
+            chart.chart.removeOverlay();
+            chart.saveDrawings();
+            document.getElementById('draw-panel').classList.remove('open');
+            showToast('Все рисунки удалены', 'info');
+        }
+    };
+
+    // Инжектим стили если еще нет
+    injectInfoPanelStyles();
+  }
+
+  drawPanel.classList.add('open');
 }
 
 /**
