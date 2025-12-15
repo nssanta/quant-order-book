@@ -59,15 +59,14 @@ export class CandlestickChart {
             totalStep: 3, // Start, End
             createPointFigures: ({ coordinates }) => {
                 if (coordinates.length > 1) {
+                    const x = Math.min(coordinates[0].x, coordinates[1].x);
+                    const y = Math.min(coordinates[0].y, coordinates[1].y);
+                    const width = Math.abs(coordinates[1].x - coordinates[0].x);
+                    const height = Math.abs(coordinates[1].y - coordinates[0].y);
                     return {
                         type: 'rect',
-                        attrs: {
-                            x: coordinates[0].x,
-                            y: coordinates[0].y,
-                            width: coordinates[1].x - coordinates[0].x,
-                            height: coordinates[1].y - coordinates[0].y
-                        },
-                        styles: { style: 'fill' }
+                        attrs: { x, y, width, height },
+                        styles: { style: 'stroke_fill' }
                     }
                 }
                 return []
