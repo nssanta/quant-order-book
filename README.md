@@ -33,7 +33,7 @@ Traditional order book tools either:
 
 | Desktop | Mobile |
 |---------|--------|
-| ![Desktop View](image.png) | Bottom Navigation |
+| ![Desktop View](image.png) | ![Mobile View](mobile.png) |
 | CVD Chart | Compact Metrics |
 
 ---
