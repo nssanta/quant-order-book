@@ -29,6 +29,15 @@
 
 ---
 
+## 🖼️ Скриншоты
+
+| Desktop | Mobile |
+|---------|--------|
+| ![Desktop View](image.png) | Bottom Navigation |
+| CVD Chart | Compact Metrics |
+
+---
+
 ## 🚀 Быстрый старт
 
 ### Требования
